@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Velha - X ou Bola</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .settings {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .settings select {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            background: #ffffff;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .settings select:hover {
+            background: #f0f0f0;
+        }
+
+        /* Estilização moderna dos campos de nomes */
+        .player-inputs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player-input-group {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 6px 12px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .player-input-group:focus-within {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .player-input-group label {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-right: 8px;
+        }
+
+        .player-input-group.x-group label {
+            color: #ff4757;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .player-input-group.o-group label {
+            color: #2ed573;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .player-input-group input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 500;
+            width: 130px;
+        }
+
+        .player-input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .status {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 8px;
+            background: #fff;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .cell {
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .cell:hover {
+            background: #e0e0e0;
+            transform: scale(0.98);
+        }
+
+        .cell.x {
+            color: #ff4757;
+        }
+
+        .cell.o {
+            color: #2ed573;
+        }
+
+        button.restart {
+            margin-top: 20px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: #ff4757;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+
+        button.restart:hover {
+            background: #ff6b81;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(255, 71, 87, 0.6);
+        }
+
+        button.restart:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Jogo da Velha</h1>
+
+    <div class="settings">
+        <select id="gameMode">
+            <option value="pvp">2 Jogadores (Local)</option>
+            <option value="pvc">Contra o Computador</option>
+        </select>
+        <select id="difficulty" style="display: none;">
+            <option value="easy">Fácil</option>
+            <option value="normal">Normal</option>
+            <option value="hard">Difícil (Imbatível)</option>
+        </select>
+    </div>
+
+    <div class="player-inputs" id="playerInputsContainer">
+        <div class="player-input-group x-group">
+            <label for="player1Name">X:</label>
+            <input type="text" id="player1Name" value="Jogador 1" placeholder="Nome do X">
+        </div>
+        <div class="player-input-group o-group">
+            <label for="player2Name">O:</label>
+            <input type="text" id="player2Name" value="Jogador 2" placeholder="Nome do O">
+        </div>
+    </div>
+    
+    <div class="status" id="status">Vez de: Jogador 1 (X)</div>
+    
+    <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+
+    <button class="restart" id="restartBtn">Reiniciar Jogo</button>
+
+    <script>
+        const board = document.getElementById('board');
+        const statusDisplay = document.getElementById('status');
+        const restartBtn = document.getElementById('restartBtn');
+        const cells = document.querySelectorAll('.cell');
+        const gameModeSelect = document.getElementById('gameMode');
+        const difficultySelect = document.getElementById('difficulty');
+        const playerInputsContainer = document.getElementById('playerInputsContainer');
+        const player1Input = document.getElementById('player1Name');
+        const player2Input = document.getElementById('player2Name');
+
+        let gameState = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let vsComputer = false;
+        let difficulty = 'easy';
+
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+            [0, 4, 8], [2, 4, 6]             
+        ];
+
+        gameModeSelect.addEventListener('change', (e) => {
+            vsComputer = e.target.value === 'pvc';
+            difficultySelect.style.display = vsComputer ? 'inline-block' : 'none';
+            playerInputsContainer.style.display = vsComputer ? 'none' : 'flex';
+            
+            if (vsComputer) {
+                player2Input.value = 'Computador';
+            } else {
+                player2Input.value = 'Jogador 2';
+            }
+            restartGame();
+        });
+
+        difficultySelect.addEventListener('change', (e) => {
+            difficulty = e.target.value;
+            restartGame();
+        });
+
+        player1Input.addEventListener('input', updateStatusText);
+        player2Input.addEventListener('input', updateStatusText);
+
+        function getPlayerName(symbol) {
+            if (symbol === 'X') {
+                return player1Input.value.trim() || 'Jogador 1';
+            } else {
+                if (vsComputer) return 'Computador';
+                return player2Input.value.trim() || 'Jogador 2';
+            }
+        }
+
+        function updateStatusText() {
+            if (!gameActive) return;
+            const name = getPlayerName(currentPlayer);
+            statusDisplay.textContent = `Vez de: ${name} (${currentPlayer})`;
+        }
+
+        function handleCellClick(e) {
+            const clickedCell = e.target;
+            const cellIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+            if (gameState[cellIndex] !== '' || !gameActive) return;
+            if (vsComputer && currentPlayer === 'O') return;
+
+            makeMove(cellIndex, currentPlayer);
+
+            if (gameActive && vsComputer && currentPlayer === 'O') {
+                setTimeout(computerMove, 400);
+            }
+        }
+
+        function makeMove(index, player) {
+            gameState[index] = player;
+            cells[index].textContent = player;
+            cells[index].classList.add(player.toLowerCase());
+
+            checkResult();
+        }
+
+        function checkResult() {
+            let roundWon = false;
+
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (gameState[a] === '' || gameState[b] === '' || gameState[c] === '') continue;
+                if (gameState[a] === gameState[b] && gameState[b] === gameState[c]) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                const winnerName = getPlayerName(currentPlayer);
+                statusDisplay.textContent = `🎉 O vencedor é ${winnerName} (${currentPlayer})! Parabéns!`;
+                gameActive = false;
+                return;
+            }
+
+            let roundDraw = !gameState.includes('');
+            if (roundDraw) {
+                statusDisplay.textContent = `Empate! 🤝 Deu velha!`;
+                gameActive = false;
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            updateStatusText();
+        }
+
+        function computerMove() {
+            if (!gameActive) return;
+
+            let move;
+            if (difficulty === 'easy') {
+                move = getRandomMove();
+            } else if (difficulty === 'normal') {
+                move = Math.random() < 0.5 ? getBestMove() : getRandomMove();
+            } else {
+                move = getBestMove();
+            }
+
+            if (move !== undefined) {
+                makeMove(move, 'O');
+            }
+        }
+
+        function getRandomMove() {
+            const emptyCells = [];
+            gameState.forEach((cell, index) => {
+                if (cell === '') emptyCells.push(index);
+            });
+            if (emptyCells.length === 0) return;
+            const randomIndex = Math.floor(Math.random() * emptyCells.length);
+            return emptyCells[randomIndex];
+        }
+
+        function getBestMove() {
+            let bestScore = -Infinity;
+            let bestMove;
+            for (let i = 0; i < 9; i++) {
+                if (gameState[i] === '') {
+                    gameState[i] = 'O';
+                    let score = minimax(gameState, 0, false);
+                    gameState[i] = '';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+            return bestMove;
+        }
+
+        function checkWinnerForMinimax(state) {
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (state[a] && state[a] === state[b] && state[a] === state[c]) {
+                    return state[a];
+                }
+            }
+            if (!state.includes('')) return 'tie';
+            return null;
+        }
+
+        function minimax(state, depth, isMaximizing) {
+            let result = checkWinnerForMinimax(state);
+            if (result !== null) {
+                if (result === 'O') return 10 - depth;
+                if (result === 'X') return depth - 10;
+                return 0;
+            }
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (state[i] === '') {
+                        state[i] = 'O';
+                        let score = minimax(state, depth + 1, false);
+                        state[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (state[i] === '') {
+                        state[i] = 'X';
+                        let score = minimax(state, depth + 1, true);
+                        state[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function restartGame() {
+            gameState = ['', '', '', '', '', '', '', '', ''];
+            gameActive = true;
+            currentPlayer = 'X';
+            updateStatusText();
+            
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o');
+            });
+        }
+
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+        restartBtn.addEventListener('click', restartGame);
+    </script>
+</body>
+</html>
